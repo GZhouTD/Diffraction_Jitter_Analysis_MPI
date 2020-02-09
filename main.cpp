@@ -16,44 +16,43 @@
 using namespace std;
 
 int main(int argv,char* argc[]) {
+    MPI_Init(&argv,&argc);  // MPI Init
     int rank_i, mpi_size;
-    MPI_Init(&argv,&argc);
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank_i);
-    MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank_i);  // get rank
+    MPI_Comm_size(MPI_COMM_WORLD, &mpi_size); // get MPI size
+    //define vars
     vector<double> freq;
     Crystal crystal;
     Jitter jitter;
     Shape shape;
+    PTB ptb;
     vector<double> x;
     vector<double> strain;
     bool jgment, disp, wrt;
-    RT rt;
-    PTB ptb;
+    vector<vector<complex<double> > > e_field;
+    //Instantiation
     Sdomain *sdomain = new Sdomain;
     Readin *readin = new Readin;
     Writeout *writeout = new Writeout;
-    crystal = readin->crystalreader("crystal.in");
-   // cout<<crystal.d<<endl;
-    vector<vector<complex<double> > > e_field;
 
-    double wavelength = h_Plank * c_speed / crystal.photon_en / e_charge;
-    double w0 = 2 * pi * c_speed / wavelength;
-    double cf = w0 / 2 / pi;
+    // read in information
+    crystal = readin->crystalreader("crystal.in");
     freq = readin->freqreader("freq.in");
     x = readin->xreader("x.in");
     shape = readin->shapereader("shape.in");
     jitter = readin->jitterreader("jitter.in");
     e_field = readin->fieldreader("laser_real.in");
+  //  cout<<e_field.size()<<e_field[0].size()<<endl;
+    //define output name;
     string outname = "diffraction";
+
     if (rank_i==0){
-        //      cout << "Current working path:  " << getcwd(NULL, 0) << endl;
-        //       cout<<"Number of processors: "<<mpi_size<<endl;
-   //     disp = writeout->input_disp(crystal,jitter,shape,freq,x,strain,e_field);
+        cout << "Current working path:  " << getcwd(NULL, 0) << endl;
+        cout<<"Number of processors: "<<mpi_size<<endl;
+        disp = writeout->input_disp(crystal,jitter,shape,freq,x,e_field);
         jgment = writeout->out_init(x.size(),outname);
-       // cout<<jgment<<endl;
     }
-    //   cout<<"Processor "<<rank_i<<" is running well!"<<endl;
-    MPI_Barrier(MPI_COMM_WORLD);
+    MPI_Barrier(MPI_COMM_WORLD);  //processors synced
     Shape s_shape;
     CON con;
     OUT out;
@@ -62,10 +61,10 @@ int main(int argv,char* argc[]) {
         s_shape = sdomain->genshape(shape,jitter,smid);
 
         con = sdomain->prepare(s_shape,ptb,x,e_field);
-   //     cout<< con.efieldT_real.size()<<"  "<<con.efieldT_real[0].size()<<endl;
+
         for (int rayid=0; rayid < x.size(); rayid++) {
             if (smid % mpi_size == rank_i) {
-          //      cout<<rayid<<endl;
+                cout<<rayid<<endl;
 
                 out = sdomain->simulate(crystal,con,ptb,x,freq,rayid);
                 wrt = writeout->writer(out,outname);

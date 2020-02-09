@@ -43,6 +43,13 @@ bool Writeout::out_init(int num, string fname) {
         f2w<<"";
         f2w.close();
     };
+    ofstream f2w_n("pos_angle.out");
+    if (!f2w_n) {
+        cout << "Unable to write to disk";
+        return false;
+    }
+    f2w_n<<"";
+    f2w_n.close();
     return true;
 }
 
@@ -77,8 +84,8 @@ return true;
 
 
 bool Writeout::input_disp(Crystal crystal, Jitter jitter, Shape shape, vector<double> freq,\
-        vector<double> x, vector<double> strain, vector<vector<complex<double> > > efield){
-    cout<<" #####Crytal Info. #####"<<endl;
+        vector<double> x, vector<vector<complex<double> > > efield){
+    cout<<" ########Crytal Info. ########"<<endl;
     cout<<"cry_thickness: "<<crystal.thickness<<endl;
     cout<<"cry_bragg: "<<crystal.bragg<<endl;
     cout<<"cry_asymmetry: "<<crystal.asymmetry<<endl;
@@ -99,7 +106,7 @@ bool Writeout::input_disp(Crystal crystal, Jitter jitter, Shape shape, vector<do
     cout<<"shape_rms: "<<jitter.shape_rms<<endl;
     cout<<"seed_init: "<<jitter.seed_init<<endl;
     cout<<"                  "<<endl;
-    cout<<"##### Shape Input Info. #####"<<endl;
+    cout<<"##### Shape Input Info. ######"<<endl;
     cout<<"shape.x size: "<<shape.g_x.size()<<endl;
     cout<<"shape.h size: "<<shape.g_h.size()<<endl;
     cout<<"shape.asym size: "<<shape.g_asym.size()<<endl;
@@ -107,21 +114,21 @@ bool Writeout::input_disp(Crystal crystal, Jitter jitter, Shape shape, vector<do
     cout<<"shape.h[900]: "<<shape.g_h[900]<<endl;
     cout<<"shape.asym[700]: "<<shape.g_asym[700]<<endl;
     cout<<"                  "<<endl;
-    cout<<"##### Freq. Input Info. #####"<<endl;
+    cout<<"##### Freq. Input Info. ######"<<endl;
     cout<<"freq.size: "<<freq.size()<<endl;
     cout<<"freq[100]: "<<freq[100]<<endl;
     cout<<"                  "<<endl;
-    cout<<"##### X Input Info. #####"<<endl;
+    cout<<"####### X Input Info. ########"<<endl;
     cout<<"x.size: "<<x.size()<<endl;
     cout<<"x[100]: "<<x[100]<<endl;
     cout<<"                  "<<endl;
     cout<<"##### Strain Input Info. #####"<<endl;
-    cout<<"strain.size: "<<strain.size()<<endl;
-    cout<<"strain[100]: "<<strain[100]<<endl;
+    cout<<"strain.size: "<<shape.g_strain.size()<<endl;
+    cout<<"strain[100]: "<<shape.g_strain[100]<<endl;
     cout<<"                  "<<endl;
     cout<<"##### Efield Input Info. #####"<<endl;
-    cout<<"efield.xsize: "<<efield.size()<<"  efield.fsize: "<<efield[10].size()<<endl;
-    cout<<"efield[50][777]: "<<efield[50][777]<<endl;
+    cout<<"efield.xsize: "<<efield.size()<<"  efield.fsize: "<<efield[0].size()<<endl;
+    cout<<"efield[50][777]: "<<efield[0][777]<<endl;
     cout<<"                  "<<endl;
 
 }
