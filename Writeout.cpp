@@ -7,7 +7,9 @@
 #include <math.h>
 Writeout::Writeout() = default;
 Writeout::~Writeout() = default;
-bool Writeout::writer(RT rt ,const string fname) {
+
+
+/*bool Writeout::writer(RT rt ,const string fname) {
     ofstream f2w(fname);
     if (!f2w) {
         cout << "Unable to write to disk";
@@ -24,12 +26,12 @@ bool Writeout::writer(RT rt ,const string fname) {
     }
     f2w.close();
     return true;
-}
+}*/
+
 
 bool Writeout::out_init(int num, string fname) {
     string fname_fit;
-    string form1 = "_real_";
-    string form2 = "_imag_";
+    string form1 = "_";
     string form3 = ".out";
     for (int fit = 0; fit < num; fit++){
         fname_fit = fname+form1+to_string(fit)+form3;
@@ -41,17 +43,26 @@ bool Writeout::out_init(int num, string fname) {
         f2w<<"";
         f2w.close();
     };
-    for (int fit = 0; fit < num; fit++){
-        fname_fit = fname+form2+to_string(fit)+form3;
-        ofstream f2w(fname_fit);
-        if (!f2w) {
-            cout << "Unable to write to disk";
-            return false;
-        }
-        f2w<<"";
-        f2w.close();
-    };
     return true;
+}
+
+bool Writeout::writer(OUT out, const string fname) {
+    ofstream f2w(fname, ios::app);
+    if (!f2w) {
+        cout << "Unable to write to disk";
+        return false;
+    }
+/*    for (int it = 0; it < rt.R00.size(); it++) {
+        f2w<<fixed<<setprecision(9)<<
+        pow(abs(*(rt.R00.begin()+it)),2)<<"    "<<
+        pow(abs(*(rt.R0H.begin()+it)),2)<<"    "<<
+        pow(abs(*(rt.R01.begin()+it)),2)<<"    "<<
+        real(*(rt.R00.begin()+it))<<"    "<<imag(*(rt.R00.begin()+it))<<"    "<<
+        real(*(rt.R0H.begin()+it))<<"    "<<imag(*(rt.R0H.begin()+it))<<"    "<<
+        real(*(rt.R01.begin()+it))<<"    "<<imag(*(rt.R01.begin()+it))<<endl;
+    }*/
+f2w.close();
+return true;
 }
 
 

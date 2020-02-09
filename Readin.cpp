@@ -95,6 +95,7 @@ Jitter Readin::jitterreader(const string fname) {
         if (!key.find("angle_rms")) { jitter.angle_rms = num; }
         if (!key.find("asymangle_rms")) { jitter.asymangle_rms = num; }
         if (!key.find("shape_rms")) { jitter.shape_rms = num; }
+        if (!key.find("strain_rms")) { jitter.strain_rms = num; }
         vector<string>().swap(values);
     }
 

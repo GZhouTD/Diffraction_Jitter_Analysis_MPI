@@ -58,7 +58,7 @@ int main(int argv,char* argc[]) {
         ptb = sdomain->g_sampling(crystal,jitter,smid);
         s_shape = sdomain->genshape(shape,jitter,smid);
         con = sdomain->prepare(s_shape,ptb,x,e_field);
-        cout<< con.efieldT_real.size()<<"  "<<con.efieldT_real[0].size()<<endl;
+   //     cout<< con.efieldT_real.size()<<"  "<<con.efieldT_real[0].size()<<endl;
         for (int rayid=0; rayid < x.size(); rayid++) {
             if (smid % mpi_size == rank_i) {
 

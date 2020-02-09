@@ -40,6 +40,7 @@ typedef struct{
     vector<complex<double> >  R00;
     vector<complex<double> >  R0H;
     vector<double> abs;
+    int smid;
 }OUT;
 
 class Sdomain {

@@ -39,6 +39,7 @@ Shape Sdomain::genshape(Shape shape, Jitter jitter, int smid){
     std::default_random_engine generator(seed);
     double c_shape;
     double c_asym;
+    double c_strain;
     for (int it=0; it<shape.g_x.size();it++){
         std::normal_distribution<double> shape_dist(shape.g_h[it], jitter.shape_rms);
         c_shape=shape_dist(generator);
@@ -46,6 +47,9 @@ Shape Sdomain::genshape(Shape shape, Jitter jitter, int smid){
         std::normal_distribution<double> asym_dist(shape.g_asym[it], jitter.asymangle_rms);
         c_asym=asym_dist(generator);
         s_shape.g_asym.push_back(c_asym);
+        std::normal_distribution<double> strain_dist(shape.g_strain[it], jitter.strain_rms);
+        c_strain=strain_dist(generator);
+        s_shape.g_strain.push_back(c_strain);
     }
     return s_shape;
 }
@@ -66,6 +70,7 @@ CON Sdomain::prepare(Shape s_shape, PTB ptb,vector<double> x, vector<vector<comp
     tk::spline strain;
     asym.set_points(s_shape.g_x, s_shape.g_asym);
     s.set_points(s_shape.g_x,s_shape.g_h);    // currently it is required that X is already sorted
+ //   cout<< s_shape.g_x.size()<<"  "<<s_shape.g_strain.size()<<endl;
     strain.set_points(s_shape.g_x,s_shape.g_strain);
     mesh = trans_project/x.size();
     for (int mesh_i=0; mesh_i<x.size()+2; mesh_i++){
@@ -95,6 +100,7 @@ CON Sdomain::prepare(Shape s_shape, PTB ptb,vector<double> x, vector<vector<comp
 
 OUT simulate(Crystal crystal, CON con, PTB ptb, vector<double> x, vector<double> freq,int smid){
     OUT out;
+    out.smid = smid;
     if ( (out.absfield.size()>0)||(out.abs.size()>0)||(out.R0H.size()>0)||(out.rfield.size()>0)\
     ||(out.tfield.size()>0)||(out.R00.size()>0) ){
         vector<complex<double> >().swap(out.rfield);

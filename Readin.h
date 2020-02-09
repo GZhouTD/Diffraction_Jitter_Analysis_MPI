@@ -46,6 +46,7 @@ typedef struct {
     double angle_rms;
     double asymangle_rms;
     double shape_rms;
+    double strain_rms;
 }Jitter;
 
 class Readin {
