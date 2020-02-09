@@ -46,22 +46,32 @@ bool Writeout::out_init(int num, string fname) {
     return true;
 }
 
+
+
 bool Writeout::writer(OUT out, const string fname) {
-    ofstream f2w(fname, ios::app);
+    string fname_fit;
+    string form1 = "_";
+    string form3 = ".out";
+    fname_fit =  fname+form1+to_string(out.rayid)+form3;
+   // cout<<fname_fit<<endl;
+    ofstream f2w(fname_fit, ios::app);
     if (!f2w) {
         cout << "Unable to write to disk";
         return false;
     }
-/*    for (int it = 0; it < rt.R00.size(); it++) {
-        f2w<<fixed<<setprecision(9)<<
-        pow(abs(*(rt.R00.begin()+it)),2)<<"    "<<
-        pow(abs(*(rt.R0H.begin()+it)),2)<<"    "<<
-        pow(abs(*(rt.R01.begin()+it)),2)<<"    "<<
-        real(*(rt.R00.begin()+it))<<"    "<<imag(*(rt.R00.begin()+it))<<"    "<<
-        real(*(rt.R0H.begin()+it))<<"    "<<imag(*(rt.R0H.begin()+it))<<"    "<<
-        real(*(rt.R01.begin()+it))<<"    "<<imag(*(rt.R01.begin()+it))<<endl;
+/*    for (int it = 0; it < out.R0H.size(); it++) {
+        f2w<<fixed<<setprecision(9)<<abs(out.R0H[it])<<"    ";
+        if (it==out.R0H.size()-1){
+            f2w<<endl;
+        }
     }*/
-f2w.close();
+    for (int it = 0; it < out.rfield.size(); it++) {
+        f2w<<fixed<<setprecision(9)<<abs(out.rfield[it])<<"    ";
+        if (it==out.rfield.size()-1){
+            f2w<<endl;
+        }
+    }
+    f2w.close();
 return true;
 }
 

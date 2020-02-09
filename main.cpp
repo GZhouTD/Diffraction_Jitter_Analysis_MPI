@@ -26,13 +26,14 @@ int main(int argv,char* argc[]) {
     Shape shape;
     vector<double> x;
     vector<double> strain;
-    bool jgment, disp;
+    bool jgment, disp, wrt;
     RT rt;
     PTB ptb;
     Sdomain *sdomain = new Sdomain;
     Readin *readin = new Readin;
     Writeout *writeout = new Writeout;
     crystal = readin->crystalreader("crystal.in");
+   // cout<<crystal.d<<endl;
     vector<vector<complex<double> > > e_field;
 
     double wavelength = h_Plank * c_speed / crystal.photon_en / e_charge;
@@ -43,25 +44,31 @@ int main(int argv,char* argc[]) {
     shape = readin->shapereader("shape.in");
     jitter = readin->jitterreader("jitter.in");
     e_field = readin->fieldreader("laser_real.in");
+    string outname = "diffraction";
     if (rank_i==0){
         //      cout << "Current working path:  " << getcwd(NULL, 0) << endl;
         //       cout<<"Number of processors: "<<mpi_size<<endl;
    //     disp = writeout->input_disp(crystal,jitter,shape,freq,x,strain,e_field);
-        jgment = writeout->out_init(x.size()/10,"diffraction");
+        jgment = writeout->out_init(x.size(),outname);
        // cout<<jgment<<endl;
     }
     //   cout<<"Processor "<<rank_i<<" is running well!"<<endl;
     MPI_Barrier(MPI_COMM_WORLD);
     Shape s_shape;
     CON con;
+    OUT out;
     for (int smid=0; smid < jitter.sample; smid++){
         ptb = sdomain->g_sampling(crystal,jitter,smid);
         s_shape = sdomain->genshape(shape,jitter,smid);
+
         con = sdomain->prepare(s_shape,ptb,x,e_field);
    //     cout<< con.efieldT_real.size()<<"  "<<con.efieldT_real[0].size()<<endl;
         for (int rayid=0; rayid < x.size(); rayid++) {
             if (smid % mpi_size == rank_i) {
+          //      cout<<rayid<<endl;
 
+                out = sdomain->simulate(crystal,con,ptb,x,freq,rayid);
+                wrt = writeout->writer(out,outname);
                 // cout<<"processor "<<rank_i<<"is working: "<<pow(smid,2)<<endl;
                 //    ptb = sdomain->sampling(crystal,jitter,shape_i,smid);
 

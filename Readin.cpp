@@ -165,6 +165,7 @@ Shape Readin::shapereader(const string fname) {
         cout << "Unable to open the shape file";
         exit(1); // terminate with error
     }
+  //  int i=0;
     while (getline(f2r, buffer)) {
         split(buffer, ' ', values);
         tmp1 = atof(values[0].c_str());
@@ -175,6 +176,8 @@ Shape Readin::shapereader(const string fname) {
         shape.g_h.push_back(tmp2);
         shape.g_asym.push_back(tmp3);
         shape.g_strain.push_back(tmp4);
+      //  cout<<i<<"  "<<tmp4<<endl;
+   //     i++;
         vector<string>().swap(values);
     }
     f2r.close();

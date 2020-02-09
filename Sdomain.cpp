@@ -50,13 +50,16 @@ Shape Sdomain::genshape(Shape shape, Jitter jitter, int smid){
         std::normal_distribution<double> strain_dist(shape.g_strain[it], jitter.strain_rms);
         c_strain=strain_dist(generator);
         s_shape.g_strain.push_back(c_strain);
+       // cout<<c_strain<<endl;
     }
+
     return s_shape;
 }
 
 
 CON Sdomain::prepare(Shape s_shape, PTB ptb,vector<double> x, vector<vector<complex<double> > >  efield) {
     CON con;
+
     double trans = x[x.size()-1]-x[0];
     double trans_project, mesh;
     if (con.n_gx.size()>0){
@@ -73,11 +76,15 @@ CON Sdomain::prepare(Shape s_shape, PTB ptb,vector<double> x, vector<vector<comp
  //   cout<< s_shape.g_x.size()<<"  "<<s_shape.g_strain.size()<<endl;
     strain.set_points(s_shape.g_x,s_shape.g_strain);
     mesh = trans_project/x.size();
+/*    for (int i=0; i<s_shape.g_strain.size();i++){
+        cout<<s_shape.g_strain[i]<<endl;
+    }*/
     for (int mesh_i=0; mesh_i<x.size()+2; mesh_i++){
         con.n_gx.push_back(ptb.pos-trans_project/2-mesh+mesh_i*mesh);
         con.n_gh.push_back(s(con.n_gx[mesh_i]));
         con.n_asym.push_back(asym(con.n_gx[mesh_i]));
         con.n_strain.push_back(strain(con.n_gx[mesh_i]));
+      //  cout<<"sss   "<<strain(con.n_gx[mesh_i])<<endl;
         //    cout<< n_gx[mesh_i]<<"    "<<n_gh[mesh_i]<<"   "<<n_asym[mesh_i]<<endl;
     }
   //  cout<< con.n_gx.size()<<"  "<<con.n_gh.size()<<"   "<<con.n_asym.size()<<endl;
@@ -92,15 +99,18 @@ CON Sdomain::prepare(Shape s_shape, PTB ptb,vector<double> x, vector<vector<comp
             tmp_imag[j][i] = efield[i][j].imag();
         }
     }
-    con.efieldT_real=tmp_real;
-    con.efieldT_real=tmp_imag;
+    con.efieldT_real.swap(tmp_real);
+    con.efieldT_imag.swap(tmp_imag);
+/*    for (int j=0; j<con.efieldT_real[0].size();j++){
+        cout<<setprecision(9)<<con.efieldT_real[0][j]<<endl;
+    }*/
     return con;
 }
 
 
-OUT simulate(Crystal crystal, CON con, PTB ptb, vector<double> x, vector<double> freq,int smid){
+OUT Sdomain::simulate(Crystal crystal, CON con, PTB ptb, vector<double> x, vector<double> freq,int rayid){
     OUT out;
-    out.smid = smid;
+    out.rayid = rayid;
     if ( (out.absfield.size()>0)||(out.abs.size()>0)||(out.R0H.size()>0)||(out.rfield.size()>0)\
     ||(out.tfield.size()>0)||(out.R00.size()>0) ){
         vector<complex<double> >().swap(out.rfield);
@@ -111,14 +121,18 @@ OUT simulate(Crystal crystal, CON con, PTB ptb, vector<double> x, vector<double>
         vector<double>().swap(out.abs);
     }
     int len = con.efieldT_real.size();
-    double x0 = con.n_gx[smid+1];
-    double mesh = con.n_gx[smid+2]-con.n_gx[smid+1];
-    double shape_prime = (con.n_gh[smid+2]-con.n_gh[smid])/2/mesh;
+    double x0 = con.n_gx[rayid+1];
+    double mesh = con.n_gx[rayid+2]-con.n_gx[rayid+1];
+    double shape_prime = (con.n_gh[rayid+2]-con.n_gh[rayid])/2/mesh;
+  //  cout<<shape_prime<<endl;
     double eray_prime = tan((180-ptb.bragg)*pi/180);
+ //   cout<<eray_prime<<endl;
     double dot = 1*1+shape_prime*eray_prime;
-    double costheta = dot/abs(shape_prime)/abs(eray_prime);
+  //  cout<<dot<<endl;
+    double costheta = dot/sqrt(1+pow(shape_prime,2))/sqrt(1+pow(eray_prime,2));
+   // cout<<costheta<<endl;
     double r_theta = acos(abs(costheta));
-    double r_asym = (crystal.asymmetry+con.n_asym[smid+1])*pi/180;
+    double r_asym = (crystal.asymmetry+con.n_asym[rayid+1])*pi/180;
     complex<double> in_laser;
     double lr;
     double lr2d;
@@ -133,7 +147,8 @@ OUT simulate(Crystal crystal, CON con, PTB ptb, vector<double> x, vector<double>
   //  double r_theta = (crystal.bragg+crystal.dbragg)*pi/180; //rad
     double gamma0 = cos(r_theta+r_asym-pi/2);
     double gammaH = cos(r_theta+r_asym+pi/2);
-    double act_d = crystal.d*(1.0+con.n_strain[smid+1]);
+    double act_d = crystal.d*(1.0+con.n_strain[rayid+1]);
+   // cout<<crystal.d<<endl;
     double asy_fac = gamma0/gammaH;
     double wavelength = h_Plank * c_speed / crystal.photon_en / e_charge;
     double ang_freq = 2*pi*c_speed/wavelength;
@@ -142,22 +157,34 @@ OUT simulate(Crystal crystal, CON con, PTB ptb, vector<double> x, vector<double>
     complex<double> A = crystal.thickness/extin_len;
     complex<double> C = exp(I*crystal.ele_sus0*wave_num*crystal.thickness/(2*gamma0));
     complex<double> G = sqrt(abs(asy_fac)*(crystal.ele_susH*crystal.ele_susHbar))/crystal.ele_susHbar;
+  //  cout<<"running well"<<endl;
     for (int i =0; i<len; i++){
         tk::spline s_real;
         tk::spline s_imag;
+/*        for (int j=0; j<con.efieldT_real[i].size();j++){
+            cout<<setprecision(9)<<x[j]<<"  "<<con.efieldT_imag[i][j]<<endl;
+        }
+        exit(1);*/
         s_real.set_points(x, con.efieldT_real[i]);
+     //   cout<<"running"<<endl;
         s_imag.set_points(x, con.efieldT_imag[i]);
         in_laser = s_real(x0)+s_imag(x0)*I;
+
         lr = c_speed*1e10/freq[i];
+     //   cout<<in_laser<<endl;
         lr2d = lr/act_d;
+     //   cout<<act_d<<endl;
         alpha = pow(lr2d,2)-2.0*lr2d*sin(r_theta);
+       // cout<< r_theta<<endl;
         y = wave_num*extin_len/(2*gamma0)*(asy_fac*alpha+crystal.ele_sus0*(1-asy_fac));
         Y1 = -y-sqrt(pow(y,2)+asy_fac/abs(asy_fac));
         Y2 = -y+sqrt(pow(y,2)+asy_fac/abs(asy_fac));
         R1 = G*Y1;
         R2 = G*Y2;
+       /// cout<<R1<<"  "<<R2<<endl;
         tR00 = exp(I*(crystal.ele_sus0*wave_num*crystal.thickness/2.0/gamma0+A/2.0*Y1))*(R2-R1)/(R2-R1*exp(I*A/2.0*(Y1-Y2)));
         tR0H = R1*R2*(1.0-exp(I*A/2.0*(Y1-Y2)))/(R2-R1*exp(I*A/2.0*(Y1-Y2)));
+      //  cout<<tR0H<<endl;
         out.R0H.push_back(tR0H);
         out.R00.push_back(tR00);
         out.abs.push_back((1-pow(abs(tR0H),2)-pow(abs(tR00),2)));
