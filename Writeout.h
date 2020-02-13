@@ -18,6 +18,7 @@ public:
     virtual ~Writeout();
  //   bool writer(RT, string);
     bool out_init(int, string);
+    bool pos_angle(double, double);
     bool input_disp(Crystal, Jitter, Shape, vector<double>,vector<double>, vector<vector<complex<double> > >);
     bool writer(OUT, string);
 };

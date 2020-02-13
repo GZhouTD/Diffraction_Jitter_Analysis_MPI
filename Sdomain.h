@@ -29,8 +29,8 @@ typedef struct{
     vector<double> n_gh;
     vector<double> n_asym;
     vector<double> n_strain;
-    vector<vector<double> > efieldT_real;
-    vector<vector<double> > efieldT_imag;
+ /*   vector<vector<double> > efieldT_real;
+    vector<vector<double> > efieldT_imag;*/
 }CON;
 
 typedef struct{
@@ -49,8 +49,8 @@ public:
     virtual ~Sdomain();
     PTB g_sampling(Crystal, Jitter, int);
     Shape genshape(Shape,Jitter, int);
-    OUT simulate(Crystal, CON, PTB, vector<double>,vector<double>, int);
-    CON prepare(Shape, PTB, vector<double>, vector<vector<complex<double> > >);
+    OUT simulate(Crystal, CON, PTB, vector<double>,vector<double>, int, vector<vector<complex<double> > >);
+    CON prepare(Shape, PTB, vector<double>);
  //   RT interaction(Crystal,vector<double>);
 };
 

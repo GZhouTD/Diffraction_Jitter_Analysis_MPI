@@ -53,7 +53,16 @@ bool Writeout::out_init(int num, string fname) {
     return true;
 }
 
-
+bool Writeout::pos_angle(double pos, double angle) {
+    ofstream f2w("pos_angle.out", ios::app);
+    if (!f2w) {
+        cout << "Unable to write to disk";
+        return false;
+    }
+    f2w<<fixed<<setprecision(9)<<pos<<"    "<<angle<<endl;
+    f2w.close();
+    return true;
+}
 
 bool Writeout::writer(OUT out, const string fname) {
     string fname_fit;
@@ -73,7 +82,7 @@ bool Writeout::writer(OUT out, const string fname) {
         }
     }*/
     for (int it = 0; it < out.rfield.size(); it++) {
-        f2w<<fixed<<setprecision(9)<<abs(out.rfield[it])<<"    ";
+        f2w<<fixed<<setprecision(9)<<abs(out.R0H[it])<<"    ";
         if (it==out.rfield.size()-1){
             f2w<<endl;
         }

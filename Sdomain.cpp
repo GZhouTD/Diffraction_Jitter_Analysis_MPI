@@ -7,7 +7,6 @@
 #include "spline.h"
 
 
-
 Sdomain::Sdomain() = default;
 
 Sdomain::~Sdomain() = default;
@@ -57,7 +56,7 @@ Shape Sdomain::genshape(Shape shape, Jitter jitter, int smid){
 }
 
 
-CON Sdomain::prepare(Shape s_shape, PTB ptb,vector<double> x, vector<vector<complex<double> > >  efield) {
+CON Sdomain::prepare(Shape s_shape, PTB ptb,vector<double> x) {
     CON con;
 
     double trans = x[x.size()-1]-x[0];
@@ -87,12 +86,10 @@ CON Sdomain::prepare(Shape s_shape, PTB ptb,vector<double> x, vector<vector<comp
       //  cout<<"sss   "<<strain(con.n_gx[mesh_i])<<endl;
         //    cout<< n_gx[mesh_i]<<"    "<<n_gh[mesh_i]<<"   "<<n_asym[mesh_i]<<endl;
     }
-  //  cout<< con.n_gx.size()<<"  "<<con.n_gh.size()<<"   "<<con.n_asym.size()<<endl;
-    int dim1 = efield.size();
+/*    int dim1 = efield.size();
     int dim2 = efield[0].size();
     vector<vector<double> > tmp_real(dim2, vector<double> (dim1));
     vector<vector<double> > tmp_imag(dim2, vector<double> (dim1));
- //   cout<< tmp.size()<< "  "<< tmp[0].size()<< endl;
     for (int  i =0; i<dim1; i++){
         for (int j=0; j< dim2; j++){
             tmp_real[j][i] = efield[i][j].real();
@@ -100,15 +97,14 @@ CON Sdomain::prepare(Shape s_shape, PTB ptb,vector<double> x, vector<vector<comp
         }
     }
     con.efieldT_real.swap(tmp_real);
-    con.efieldT_imag.swap(tmp_imag);
-/*    for (int j=0; j<con.efieldT_real[0].size();j++){
-        cout<<setprecision(9)<<con.efieldT_real[0][j]<<endl;
-    }*/
+    con.efieldT_imag.swap(tmp_imag);*/
+
     return con;
 }
 
 
-OUT Sdomain::simulate(Crystal crystal, CON con, PTB ptb, vector<double> x, vector<double> freq,int rayid){
+OUT Sdomain::simulate(Crystal crystal, CON con, PTB ptb, vector<double> x, vector<double> freq,int rayid, \
+vector<vector<complex<double> > > efield){
     OUT out;
     out.rayid = rayid;
     if ( (out.absfield.size()>0)||(out.abs.size()>0)||(out.R0H.size()>0)||(out.rfield.size()>0)\
@@ -120,9 +116,9 @@ OUT Sdomain::simulate(Crystal crystal, CON con, PTB ptb, vector<double> x, vecto
         vector<complex<double> >().swap(out.R0H);
         vector<double>().swap(out.abs);
     }
-    int len = con.efieldT_real.size();
+    int len = freq.size();
     double x0 = con.n_gx[rayid+1];
-    double mesh = con.n_gx[rayid+2]-con.n_gx[rayid+1];
+    double mesh = con.n_gx[1]-con.n_gx[0];
     double shape_prime = (con.n_gh[rayid+2]-con.n_gh[rayid])/2/mesh;
   //  cout<<shape_prime<<endl;
     double eray_prime = tan((180-ptb.bragg)*pi/180);
@@ -146,7 +142,7 @@ OUT Sdomain::simulate(Crystal crystal, CON con, PTB ptb, vector<double> x, vecto
     complex<double> tR0H;
   //  double r_theta = (crystal.bragg+crystal.dbragg)*pi/180; //rad
     double gamma0 = cos(r_theta+r_asym-pi/2);
-    double gammaH = cos(r_theta+r_asym+pi/2);
+    double gammaH = cos(r_theta-r_asym+pi/2);
     double act_d = crystal.d*(1.0+con.n_strain[rayid+1]);
    // cout<<crystal.d<<endl;
     double asy_fac = gamma0/gammaH;
@@ -159,16 +155,13 @@ OUT Sdomain::simulate(Crystal crystal, CON con, PTB ptb, vector<double> x, vecto
     complex<double> G = sqrt(abs(asy_fac)*(crystal.ele_susH*crystal.ele_susHbar))/crystal.ele_susHbar;
   //  cout<<"running well"<<endl;
     for (int i =0; i<len; i++){
-        tk::spline s_real;
+/*        tk::spline s_real;
         tk::spline s_imag;
-/*        for (int j=0; j<con.efieldT_real[i].size();j++){
-            cout<<setprecision(9)<<x[j]<<"  "<<con.efieldT_imag[i][j]<<endl;
-        }
-        exit(1);*/
+
         s_real.set_points(x, con.efieldT_real[i]);
-     //   cout<<"running"<<endl;
         s_imag.set_points(x, con.efieldT_imag[i]);
-        in_laser = s_real(x0)+s_imag(x0)*I;
+        in_laser = s_real(x0)+s_imag(x0)*I;*/
+        in_laser = efield[rayid][i];
 
         lr = c_speed*1e10/freq[i];
      //   cout<<in_laser<<endl;
