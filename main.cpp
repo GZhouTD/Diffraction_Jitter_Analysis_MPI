@@ -16,20 +16,24 @@
 using namespace std;
 
 int main(int argv,char* argc[]) {
+
     MPI_Init(&argv,&argc);  // MPI Init
     int rank_i, mpi_size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank_i);  // get rank
     MPI_Comm_size(MPI_COMM_WORLD, &mpi_size); // get MPI size
+
     //define vars
+    bool jgment, disp,pa, wrt;
+    //define output name;
+    string outname = "diffraction";
     vector<double> freq;
+    vector<double> x;
+    vector<double> strain;
+    vector<vector<complex<double> > > e_field;
     Crystal crystal;
     Jitter jitter;
     Shape shape;
     PTB ptb;
-    vector<double> x;
-    vector<double> strain;
-    bool jgment, disp,pa, wrt;
-    vector<vector<complex<double> > > e_field;
     Shape s_shape;
     CON con;
     OUT out;
@@ -46,15 +50,15 @@ int main(int argv,char* argc[]) {
     jitter = readin->jitterreader("jitter.in");
     e_field = readin->fieldreader("laser_real.in");
   //  cout<<e_field.size()<<e_field[0].size()<<endl;
-    //define output name;
-    string outname = "diffraction";
 
+    // show intput info
     if (rank_i==0){
         cout << "Current working path:  " << getcwd(NULL, 0) << endl;
         cout<<"Number of processors: "<<mpi_size<<endl;
         disp = writeout->input_disp(crystal,jitter,shape,freq,x,e_field); //display the inputs.
-        jgment = writeout->out_init(x.size(),outname); //generate the outputs file to be inject.
+        jgment = writeout->out_init(x.size(),outname); //generate the outputs file to inject.
     }
+
     MPI_Barrier(MPI_COMM_WORLD);  //processors synced
 
     // sample loop
@@ -67,12 +71,15 @@ int main(int argv,char* argc[]) {
         if (rank_i==0){
             pa = writeout->pos_angle(ptb.pos,ptb.bragg);  //record the position and input angle
         }
+
         for (int rayid=0; rayid < x.size(); rayid++) {
             if (rayid % mpi_size == rank_i) {
-                if (rayid%5==0 && smid%10==0){
+                if (rayid%10==0 && smid%1==0){
                   cout<<"Sample ID: "<<smid<<" Ray ID: "<<rayid<<endl;  // screen display to show progress
                 }
+
                 out = sdomain->simulate(crystal,con,ptb,x,freq,rayid, e_field);  //real simulation !!!!
+
                 wrt = writeout->writer(out,outname);  // generate the output files
                 // cout<<"processor "<<rank_i<<"is working: "<<pow(smid,2)<<endl;
                 //    ptb = sdomain->sampling(crystal,jitter,shape_i,smid);
@@ -81,6 +88,7 @@ int main(int argv,char* argc[]) {
     }
   //  rt = sdomain->interaction(crystal,freq);
             //->writer(rt,"out.dat");
+
     MPI_Finalize();  // MPI stop
     return 0;
 }

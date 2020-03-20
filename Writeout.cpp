@@ -82,9 +82,15 @@ bool Writeout::writer(OUT out, const string fname) {
         }
     }*/
     for (int it = 0; it < out.rfield.size(); it++) {
-        f2w<<fixed<<setprecision(9)<<abs(out.R0H[it])<<"    ";
-        if (it==out.rfield.size()-1){
+        f2w<<fixed<<setprecision(9)<<out.R0H[it].real()<<"    ";
+     /*   if (it==out.rfield.size()-1){
             f2w<<endl;
+        }*/
+    }
+    for (int it = 0; it < out.rfield.size(); it++) {
+        f2w << fixed << setprecision(9) << out.R0H[it].imag() << "    ";
+        if (it == out.rfield.size() - 1) {
+            f2w << endl;
         }
     }
     f2w.close();
@@ -94,6 +100,7 @@ return true;
 
 bool Writeout::input_disp(Crystal crystal, Jitter jitter, Shape shape, vector<double> freq,\
         vector<double> x, vector<vector<complex<double> > > efield){
+
     cout<<" ########Crytal Info. ########"<<endl;
     cout<<"cry_thickness: "<<crystal.thickness<<endl;
     cout<<"cry_bragg: "<<crystal.bragg<<endl;
@@ -139,7 +146,7 @@ bool Writeout::input_disp(Crystal crystal, Jitter jitter, Shape shape, vector<do
     cout<<"efield.xsize: "<<efield.size()<<"  efield.fsize: "<<efield[0].size()<<endl;
     cout<<"efield[50][777]: "<<efield[0][777]<<endl;
     cout<<"                  "<<endl;
-
+    return  true;
 }
 
 

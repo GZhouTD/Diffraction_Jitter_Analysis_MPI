@@ -1,0 +1,9 @@
+sample = 10
+pos_init = 0
+pos_rms = 0
+angle_init = 0
+angle_rms = 0
+asymangle_rms = 0
+shape_rms = 0
+seed_init = 100
+strain_rms = 0

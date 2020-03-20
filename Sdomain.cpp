@@ -58,26 +58,25 @@ Shape Sdomain::genshape(Shape shape, Jitter jitter, int smid){
 
 CON Sdomain::prepare(Shape s_shape, PTB ptb,vector<double> x) {
     CON con;
-
     double trans = x[x.size()-1]-x[0];
     double trans_project, mesh;
+
     if (con.n_gx.size()>0){
         vector<double>().swap(con.n_gx);
         vector<double>().swap(con.n_gh);
         vector<double>().swap(con.n_asym);
     }
+
     trans_project = trans * sin(pi/180*ptb.bragg);
     tk::spline s;
     tk::spline asym;
     tk::spline strain;
+
+    s.set_points(s_shape.g_x,s_shape.g_h);
     asym.set_points(s_shape.g_x, s_shape.g_asym);
-    s.set_points(s_shape.g_x,s_shape.g_h);    // currently it is required that X is already sorted
- //   cout<< s_shape.g_x.size()<<"  "<<s_shape.g_strain.size()<<endl;
     strain.set_points(s_shape.g_x,s_shape.g_strain);
     mesh = trans_project/x.size();
-/*    for (int i=0; i<s_shape.g_strain.size();i++){
-        cout<<s_shape.g_strain[i]<<endl;
-    }*/
+
     for (int mesh_i=0; mesh_i<x.size()+2; mesh_i++){
         con.n_gx.push_back(ptb.pos-trans_project/2-mesh+mesh_i*mesh);
         con.n_gh.push_back(s(con.n_gx[mesh_i]));
